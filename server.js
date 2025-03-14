@@ -2,8 +2,18 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const mongoose = require('mongoose');
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Cho phép tất cả các nguồn
+        methods: ["GET", "POST"]
+    }
+});
+
 const port = 3000;
 
 // Kết nối MongoDB Atlas
@@ -49,8 +59,18 @@ const friendRoutes = require("./routes/friendRoutes");
 
 app.use("/api/friends", friendRoutes);
 
+io.on("connection", (socket) => {
+    console.log("Người dùng đã kết nối:", socket.id);
 
+    socket.on("sendMessage", (data) => {
+        io.emit("receiveMessage", data);
+    });
 
-app.listen(port, () => {
+    socket.on("disconnect", () => {
+        console.log("Người dùng đã ngắt kết nối:", socket.id);
+    });
+});
+
+server.listen(port, () => {
     console.log(`✅ Server đang chạy tại http://localhost:${port}`);
 });

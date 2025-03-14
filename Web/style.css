@@ -105,27 +105,28 @@ button:hover {
 }
 /* Ô chứa tin nhắn */
 .message {
-  max-width: 70%;
   padding: 10px;
   margin: 5px;
   border-radius: 10px;
-  word-wrap: break-word;
+  max-width: 60%;
 }
 
-/* Tin nhắn của người dùng (bạn) */
 .message.user {
-  background: #ffffff;
-  border: 1px solid #ccc;
-  text-align: left;
-  margin-left: auto;  /* Đẩy tin nhắn về bên phải nhưng giữ căn lề đúng */
+  background-color: #d1e7dd;
+  align-self: flex-end;
+  text-align: right;
 }
 
-/* Tin nhắn của bạn bè hoặc bot */
-.message.bot {
-  background: #007bff;
-  color: white;
-  border: 1px solid #0056b3;
+.message.friend {
+  background-color: #f8d7da;
   align-self: flex-start;
+  text-align: left;
+}
+
+.message.bot {
+  background-color: #e2e3e5;
+  align-self: flex-start;
+  text-align: left;
 }
 
 /* Căn chỉnh tin nhắn */

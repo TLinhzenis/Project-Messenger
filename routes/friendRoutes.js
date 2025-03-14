@@ -1,58 +1,88 @@
 const express = require("express");
 const router = express.Router();
 const ListFriend = require("../models/ListFriend");
+const User = require("../models/User");
 
-// Gửi lời mời kết bạn
-router.post("/send-friend-request", async (req, res) => {
+router.post("/request", async (req, res) => {
+    const { userId1, userId2 } = req.body;
+
     try {
-        const { senderId, receiverId } = req.body;
+        const user1 = await User.findById(userId1);
+        const user2 = await User.findById(userId2);
 
-        const existingRequest = await ListFriend.findOne({ userId1: senderId, userId2: receiverId });
-        if (existingRequest) {
-            return res.status(400).json({ error: "Bạn đã gửi lời mời rồi!" });
+        if (!user1 || !user2) {
+            return res.status(404).json({ error: "Người dùng không tồn tại." });
         }
 
-        await ListFriend.create({ userId1: senderId, userId2: receiverId, status: "pending" });
-        res.json({ message: "Lời mời kết bạn đã được gửi!" });
+        const friendRequest = new ListFriend({
+            userId1,
+            userId2,
+            notification: `Có lời mời kết bạn từ ${user1.name}`,
+            status: "waiting"
+        });
+
+        await friendRequest.save();
+        res.status(200).json({ message: "Đã gửi lời mời kết bạn." });
     } catch (error) {
-        console.error("Lỗi gửi kết bạn:", error);
-        res.status(500).json({ error: "Lỗi máy chủ!" });
+        console.error("Lỗi khi gửi lời mời kết bạn:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
     }
 });
 
-// Lấy danh sách lời mời kết bạn
-router.get("/get-friend-requests", async (req, res) => {
+router.get("/notifications", async (req, res) => {
+    const { userId } = req.query;
+
     try {
-        const { userId } = req.query;
-
-        const requests = await ListFriend.find({ userId2: userId, status: "pending" })
-            .populate("userId1", "name");
-
-        res.json(requests.map(r => ({
-            _id: r._id,
-            senderName: r.userId1.name
-        })));
+        const notifications = await ListFriend.find({ userId2: userId, status: "waiting" });
+        res.status(200).json(notifications);
     } catch (error) {
-        console.error("Lỗi tải danh sách:", error);
-        res.status(500).json({ error: "Lỗi máy chủ!" });
+        console.error("Lỗi khi tải thông báo:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
     }
 });
 
-// Xử lý lời mời kết bạn
-router.post("/respond-friend-request", async (req, res) => {
-    try {
-        const { requestId, action } = req.body;
+router.post("/respond", async (req, res) => {
+    const { notificationId, accept } = req.body;
 
-        if (action === "accept") {
-            await ListFriend.findByIdAndUpdate(requestId, { status: "friend" });
+    try {
+        const notification = await ListFriend.findById(notificationId);
+
+        if (!notification) {
+            return res.status(404).json({ error: "Thông báo không tồn tại." });
+        }
+
+        if (accept) {
+            notification.status = "friend";
+            notification.notification = null;
         } else {
-            await ListFriend.findByIdAndDelete(requestId);
+            await notification.remove();
         }
 
-        res.json({ message: "Xử lý thành công!" });
+        await notification.save();
+        res.status(200).json({ message: "Đã phản hồi lời mời kết bạn." });
     } catch (error) {
-        console.error("Lỗi xử lý lời mời:", error);
-        res.status(500).json({ error: "Lỗi máy chủ!" });
+        console.error("Lỗi khi phản hồi lời mời kết bạn:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
+    }
+});
+
+router.get("/friends", async (req, res) => {
+    const { userId } = req.query;
+
+    try {
+        const friends = await ListFriend.find({
+            $or: [{ userId1: userId, status: "friend" }, { userId2: userId, status: "friend" }]
+        }).populate("userId1 userId2", "name");
+
+        const friendList = friends.map(friend => {
+            const isUser1 = friend.userId1._id.toString() === userId;
+            return isUser1 ? friend.userId2 : friend.userId1;
+        });
+
+        res.status(200).json(friendList);
+    } catch (error) {
+        console.error("Lỗi khi tải danh sách bạn bè:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
     }
 });
 
