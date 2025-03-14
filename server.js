@@ -1,10 +1,17 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const mongoose = require('mongoose');
 
 const app = express();
 const port = 3000;
 
+// Kết nối MongoDB Atlas
+const mongoURI = "mongodb+srv://btuanlinh715:Btuanlinh715@cluster0.krja2.mongodb.net/MessagerApp?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(mongoURI)
+    .then(() => console.log("✅ Kết nối MongoDB thành công!"))
+    .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 const GOOGLE_API_KEY = "AIzaSyA_iOgOvxaY9BHnNPxSrMLoSEr7LADFTs4";  
 const MODEL_NAME = "models/gemini-1.5-pro-latest"; // Đổi sang model mới nhất
 
@@ -35,6 +42,14 @@ app.post("/chat", async (req, res) => {
         res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
     }
 });
+
+const userRoutes = require("./routes/UserRoute");
+app.use("/api", userRoutes);
+const friendRoutes = require("./routes/friendRoutes");
+
+app.use("/api/friends", friendRoutes);
+
+
 
 app.listen(port, () => {
     console.log(`✅ Server đang chạy tại http://localhost:${port}`);

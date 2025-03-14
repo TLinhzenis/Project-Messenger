@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar trái -->
+        <aside class="sidebar left">
+            <div class="logo">ChatApp</div>
+            <input type="text" id="search" placeholder="Tìm kiếm bạn bè...">
+            
+            <button id="loginBtn">Đăng nhập</button>
+            <button id="logoutBtn">Đăng xuất</button>
+            <div id="friendRequestsContainer">
+                <h3>Lời mời kết bạn</h3>
+                <ul id="friendRequests"></ul>
+            </div>
+             
+            
+        </aside>
+
+        <!-- Màn hình trung tâm -->
+        <main class="chat-area">
+            <div id="chat-title">Chọn một người để trò chuyện</div>
+            <div id="chatbox"></div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Nhập tin nhắn...">
+                <button onclick="sendMessage()">Gửi</button>
+            </div>
+        </main>
+
+        <!-- Sidebar phải -->
+        <aside class="sidebar right">
+            <h3>Danh sách bạn bè</h3>
+            <ul id="friendList">
+                <!-- Danh sách bạn bè sẽ được thêm vào đây -->
+            </ul>
+        </aside>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

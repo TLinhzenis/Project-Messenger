@@ -1,0 +1,146 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+}
+
+/* Sidebar chung */
+.sidebar {
+  width: 20%;
+  padding: 15px;
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Sidebar trái */
+.sidebar.left {
+  border-right: 2px solid #ccc;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+input, button {
+  width: 90%;
+  padding: 10px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 5px;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* Sidebar phải */
+.sidebar.right {
+  border-left: 2px solid #ccc;
+}
+
+.sidebar.right ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.sidebar.right ul li {
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  margin: 5px 0;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sidebar.right ul li:hover {
+  background: #ddd;
+}
+
+/* Màn hình chat */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+#chatbox {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fafafa;
+}
+
+.input-area {
+  display: flex;
+  gap: 10px;
+}
+
+.input-area input {
+  flex-grow: 1;
+}
+
+.input-area button {
+  width: auto;
+}
+/* Ô chứa tin nhắn */
+.message {
+  max-width: 70%;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  word-wrap: break-word;
+}
+
+/* Tin nhắn của người dùng (bạn) */
+.message.user {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  text-align: left;
+  margin-left: auto;  /* Đẩy tin nhắn về bên phải nhưng giữ căn lề đúng */
+}
+
+/* Tin nhắn của bạn bè hoặc bot */
+.message.bot {
+  background: #007bff;
+  color: white;
+  border: 1px solid #0056b3;
+  align-self: flex-start;
+}
+
+/* Căn chỉnh tin nhắn */
+#chatbox {
+  display: flex;
+  flex-direction: column;
+}
+.user-result {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.user-result:hover {
+  background-color: #f0f0f0;
+}
+
+
