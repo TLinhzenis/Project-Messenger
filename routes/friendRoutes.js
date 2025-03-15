@@ -54,11 +54,11 @@ router.post("/respond", async (req, res) => {
         if (accept) {
             notification.status = "friend";
             notification.notification = null;
+            await notification.save();
         } else {
-            await notification.remove();
+            await ListFriend.findByIdAndDelete(notificationId);
         }
 
-        await notification.save();
         res.status(200).json({ message: "Đã phản hồi lời mời kết bạn." });
     } catch (error) {
         console.error("Lỗi khi phản hồi lời mời kết bạn:", error);
