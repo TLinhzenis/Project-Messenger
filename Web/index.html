@@ -13,17 +13,14 @@
         <aside class="sidebar left">
             <div class="logo">ChatApp</div>
             <input type="text" id="search" placeholder="Tìm kiếm bạn bè...">
+            <input type="hidden" id="receiverId" value="">
             
             <button id="loginBtn">Đăng nhập</button>
             <button id="logoutBtn">Đăng xuất</button>
-            ...
-<div id="notificationsContainer">
-    <h3>Thông báo</h3>
-    <ul id="notifications"></ul>
-</div>
-...
-             
-            
+            <div id="notificationsContainer">
+                <h3>Thông báo</h3>
+                <ul id="notifications"></ul>
+            </div>
         </aside>
 
         <!-- Màn hình trung tâm -->
@@ -46,5 +43,31 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+
+        const userInput = document.getElementById('userInput');
+
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const message = userInput.value;
+            if (message.trim() !== '') {
+                socket.emit('sendMessage', { text: message });
+                userInput.value = '';
+            }
+        }
+
+        socket.on('receiveMessage', (data) => {
+            const chatbox = document.getElementById('chatbox');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = data.text;
+            chatbox.appendChild(messageElement);
+        });
+    </script>
 </body>
 </html>

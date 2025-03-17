@@ -138,6 +138,16 @@ button:hover {
   padding: 10px;
   border-bottom: 1px solid #ddd;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-result .button-container {
+  display: flex;
+  align-items: center;
+  width: 70px;
+  float: right;
 }
 
 .user-result:hover {

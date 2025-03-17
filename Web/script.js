@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const friendList = document.getElementById("friendList");
     const chatbox = document.getElementById("chatbox");
     const chatTitle = document.getElementById("chat-title");
     const socket = io("http://localhost:3000");
 
-    window.loadFriends = async function() {
+    // Hàm tải danh sách bạn bè
+    window.loadFriends = async function () {
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user) return;
 
@@ -14,14 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const friendList = document.getElementById("friendList");
             friendList.innerHTML = friends.map(friend => `
-                <li onclick="startChat('${friend.name}')">${friend.name}</li>
+                <li onclick="startChat('${friend._id}', '${friend.name}')">${friend.name}</li>
             `).join("");
         } catch (error) {
             console.error("Lỗi khi tải danh sách bạn bè:", error);
         }
     };
 
-    window.loadNotifications = async function() {
+    // Hàm tải thông báo
+    window.loadNotifications = async function () {
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user) return;
 
@@ -42,7 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    window.respondToFriendRequest = async function(notificationId, accept) {
+    // Hàm phản hồi lời mời kết bạn
+    window.respondToFriendRequest = async function (notificationId, accept) {
         try {
             const response = await fetch(`http://localhost:3000/api/friends/respond`, {
                 method: "POST",
@@ -61,20 +63,43 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    window.sendFriendRequest = async function(friendId) {
+    // Hàm gửi lời mời kết bạn
+    window.sendFriendRequest = async function (friendId) {
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user) {
             alert("Vui lòng đăng nhập để gửi lời mời kết bạn.");
             return;
         }
-
+    
+        // Kiểm tra xem người dùng đã là bạn bè hay chưa hoặc đã gửi lời mời kết bạn
+        try {
+            const response = await fetch(`http://localhost:3000/api/friends/friends?userId=${user._id}`);
+            const friends = await response.json();
+            const isFriend = friends.some(friend => friend._id === friendId);
+    
+            if (isFriend) {
+                alert("Người dùng này đã là bạn bè.");
+                return;
+            }
+    
+            const waitingResponse = await fetch(`http://localhost:3000/api/friends/waiting?userId1=${user._id}&userId2=${friendId}`);
+            const waitingRequests = await waitingResponse.json();
+            if (waitingRequests.length > 0) {
+                alert("Bạn đã gửi lời mời kết bạn, vui lòng chờ đối phương xác nhận.");
+                return;
+            }
+        } catch (error) {
+            console.error("Lỗi khi kiểm tra danh sách bạn bè hoặc lời mời kết bạn:", error);
+            return;
+        }
+    
         try {
             const response = await fetch("http://localhost:3000/api/friends/request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId1: user._id, userId2: friendId })
             });
-
+    
             if (response.ok) {
                 alert("Đã gửi lời mời kết bạn.");
             } else {
@@ -85,39 +110,76 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Lỗi khi gửi lời mời kết bạn:", error);
         }
     };
-
     loadFriends();
 
-    // Bắt đầu trò chuyện
-    window.startChat = function(friendName) {
+    // Hàm bắt đầu trò chuyện
+    window.startChat = async function (friendId, friendName) {
         chatTitle.textContent = `Trò chuyện với ${friendName}`;
         chatbox.innerHTML = ""; // Xóa tin nhắn cũ
+
+        // Đặt giá trị của trường ẩn receiverId
+        document.getElementById("receiverId").value = friendId;
+
+        const user = JSON.parse(localStorage.getItem("user"));
+        await loadMessages(user._id, friendId);
+
+        // Hiển thị lại thanh nhập tin nhắn khi chọn một người bạn
+        document.querySelector('.input-area').style.display = 'flex';
+
+        // Reset chatbox styles to ensure proper layout
+        chatbox.style.display = "flex";
+        chatbox.style.flexDirection = "column";
+        chatbox.style.overflowY = "auto";
+        chatbox.style.border = "1px solid #ccc";
+        chatbox.style.padding = "10px";
+        chatbox.style.background = "#fafafa";
     };
 
     // Nhận tin nhắn từ server
     socket.on("receiveMessage", (data) => {
         const user = JSON.parse(localStorage.getItem("user"));
-        const className = data.sender === user.name ? "user" : "friend";
-        addMessage(data.sender, data.message, className);
+        const className = data.senderId === user._id ? "user" : "friend";
+        addMessage(data.senderName, data.message, className);
     });
 
-    // Gửi tin nhắn
-    window.sendMessage = async function() {
+    // Hàm gửi tin nhắn
+    window.sendMessage = async function () {
         let input = document.getElementById("userInput").value;
         if (!input.trim()) return;
 
         const user = JSON.parse(localStorage.getItem("user"));
+        const receiverIdElement = document.getElementById("receiverId");
+        if (!receiverIdElement || !receiverIdElement.value) {
+            console.error("Không tìm thấy ID của người nhận.");
+            return;
+        }
+        const receiverId = receiverIdElement.value; // ID của người nhận
+
         const messageData = {
-            sender: user.name,
-            message: input,
-            className: "user"
+            senderId: user._id,
+            receiverId: receiverId,
+            message: input
         };
 
-        addMessage("Bạn", input, "user");
-        document.getElementById("userInput").value = "";
+        try {
+            const response = await fetch("http://localhost:3000/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(messageData)
+            });
+
+            if (!response.ok) {
+                console.error("Lỗi khi gửi tin nhắn:", await response.json());
+            }
+        } catch (error) {
+            console.error("Lỗi khi gửi tin nhắn:", error);
+        }
 
         // Gửi tin nhắn qua Socket.IO
-        socket.emit("sendMessage", messageData);
+        socket.emit("sendMessage", {
+            ...messageData,
+            senderName: user.name
+        });
 
         // Nếu tin nhắn có "@bot" thì gọi chatbot
         if (input.includes("@bot")) {
@@ -130,7 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 let data = await response.json();
                 const botMessageData = {
-                    sender: "Bot",
+                    senderId: "bot", // Đặt senderId là "bot"
+                    senderName: "Bot", // Đặt senderName là "Bot"
                     message: data.reply,
                     className: "bot"
                 };
@@ -139,7 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 socket.emit("sendMessage", botMessageData);
             } catch (error) {
                 const botErrorMessageData = {
-                    sender: "Bot",
+                    senderId: "bot", // Đặt senderId là "bot"
+                    senderName: "Bot", // Đặt senderName là "Bot"
                     message: "Lỗi khi kết nối chatbot!",
                     className: "bot"
                 };
@@ -150,24 +214,42 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Hiển thị tin nhắn với giao diện mới
-    function addMessage(sender, text, className) {
+    // Hàm thêm tin nhắn vào giao diện
+    function addMessage(senderName, text, className) {
         let chatbox = document.getElementById("chatbox");
         let message = document.createElement("div");
         message.className = "message " + className;
-        message.innerHTML = `<strong>${sender}:</strong><br>${formatMessage(text)}`;
+        message.innerHTML = `<strong>${senderName}:</strong><br>${formatMessage(text)}`;
         chatbox.appendChild(message);
         chatbox.scrollTop = chatbox.scrollHeight;
     }
 
+    // Hàm định dạng tin nhắn
     function formatMessage(text, maxLength = 150) {
         let formattedText = "";
         for (let i = 0; i < text.length; i += maxLength) {
-            formattedText += text.substring(i, i + maxLength) + "<br>"; // Ngắt dòng mỗi 100 ký tự
+            formattedText += text.substring(i, i + maxLength) + "<br>"; // Ngắt dòng mỗi 150 ký tự
         }
         return formattedText;
     }
 
+    // Hàm tải tin nhắn
+    async function loadMessages(userId1, userId2) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/messages?userId1=${userId1}&userId2=${userId2}`);
+            const messages = await response.json();
+
+            chatbox.innerHTML = messages.map(message => `
+                <div class="message ${message.senderId === userId1 ? 'user' : 'friend'}">
+                    <strong>${message.senderId === userId1 ? 'You' : message.senderName}:</strong><br>${message.message}
+                </div>
+            `).join("");
+        } catch (error) {
+            console.error("Lỗi khi tải tin nhắn:", error);
+        }
+    }
+
+    // Xử lý đăng nhập/đăng xuất
     const user = JSON.parse(localStorage.getItem("user"));
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -187,18 +269,28 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("user");
         window.location.reload(); // Load lại trang sau khi đăng xuất
     });
+
+    // Đăng nhập
     loginBtn.addEventListener("click", function () {
         window.location.href = "login.html"; // Điều hướng đến trang đăng nhập
     });
 
+    // Tải danh sách bạn bè và thông báo khi trang được tải
+    loadFriends();
     loadNotifications();
 
-    document.getElementById("search").addEventListener("input", async function () {
+    // Xử lý sự kiện tìm kiếm
+    document.getElementById("search").addEventListener("keypress", async function (event) {
+        if (event.key !== 'Enter') return;
+
         const query = this.value.trim();
         const chatbox = document.getElementById("chatbox");
         const chatTitle = document.getElementById("chat-title");
         const inputArea = document.querySelector(".input-area"); // Lấy phần nhập tin nhắn
         const user = JSON.parse(localStorage.getItem("user"));
+
+        // Ẩn chatbox ngay lập tức khi bắt đầu tìm kiếm
+        chatbox.style.display = "none";
 
         if (query.length === 0) {
             // Khi không nhập gì, hiển thị lại nội dung chat
@@ -216,22 +308,32 @@ document.addEventListener("DOMContentLoaded", () => {
             if (users.length === 0) {
                 chatTitle.innerHTML = "Không tìm thấy kết quả";
                 chatbox.innerHTML = "";
+                chatbox.style.display = "block"; // Hiển thị lại chatbox khi không có kết quả
             } else {
-                // Ẩn chat khi tìm kiếm có kết quả
-                chatbox.style.display = "block";
-                inputArea.style.display = "none"; // Ẩn khung nhập tin nhắn
+                // Hiển thị kết quả tìm kiếm
                 chatTitle.innerHTML = "Kết quả tìm kiếm:";
-                chatbox.innerHTML = users.map(user => `
-                    <div class="user-result">
-                        ${user.name}
-                        <button onclick="sendFriendRequest('${user._id}')" ${user.isFriend ? 'disabled' : ''}>${user.isFriend ? 'Đã là bạn' : 'Kết bạn'}</button>
-                    </div>
-                `).join("");
+                inputArea.style.display = "none"; // Ẩn khung nhập tin nhắn
+
+                // Lấy danh sách bạn bè
+                const friendsResponse = await fetch(`http://localhost:3000/api/friends/friends?userId=${user._id}`);
+                const friends = await friendsResponse.json();
+
+                chatbox.innerHTML = users.map(searchUser => {
+                    const isFriend = friends.some(friend => friend._id === searchUser._id);
+                    return `
+                        <div class="user-result">
+                            ${searchUser.name}
+                            ${searchUser._id === user._id || isFriend ? '' : `<button class="button-container" onclick="sendFriendRequest('${searchUser._id}')">Kết bạn</button>`}
+                        </div>
+                    `;
+                }).join("");
+                chatbox.style.display = "block"; // Hiển thị lại chatbox khi có kết quả
             }
         } catch (error) {
             console.error("Lỗi tìm kiếm:", error);
             chatTitle.innerHTML = "Lỗi khi tải dữ liệu";
             chatbox.innerHTML = "";
+            chatbox.style.display = "block"; // Hiển thị lại chatbox khi có lỗi
         }
     });
 });

@@ -56,8 +56,10 @@ app.post("/chat", async (req, res) => {
 const userRoutes = require("./routes/UserRoute");
 app.use("/api", userRoutes);
 const friendRoutes = require("./routes/friendRoutes");
-
 app.use("/api/friends", friendRoutes);
+
+const messageRoutes = require("./routes/messageRoutes");
+app.use("/api", messageRoutes);
 
 io.on("connection", (socket) => {
     console.log("Người dùng đã kết nối:", socket.id);

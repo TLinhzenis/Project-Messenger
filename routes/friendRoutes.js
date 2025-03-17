@@ -86,4 +86,21 @@ router.get("/friends", async (req, res) => {
     }
 });
 
+router.get("/waiting", async (req, res) => {
+    const { userId1, userId2 } = req.query;
+
+    try {
+        const waitingRequests = await ListFriend.find({
+            userId1,
+            userId2,
+            status: "waiting"
+        });
+
+        res.status(200).json(waitingRequests);
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra lời mời kết bạn đang chờ:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau!" });
+    }
+});
+
 module.exports = router;
