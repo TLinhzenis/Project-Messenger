@@ -64,9 +64,11 @@ app.use("/api", messageRoutes);
 io.on("connection", (socket) => {
     console.log("Người dùng đã kết nối:", socket.id);
 
-    socket.on("sendMessage", (data) => {
-        io.emit("receiveMessage", data);
-    });
+socket.on("sendMessage", (data) => {
+    io.emit("receiveMessage", data);
+    io.emit("updateRecentChats", data.receiverId, data.senderId);
+});
+
 
     socket.on("disconnect", () => {
         console.log("Người dùng đã ngắt kết nối:", socket.id);

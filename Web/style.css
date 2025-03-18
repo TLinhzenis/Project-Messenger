@@ -90,6 +90,16 @@ button:hover {
   padding: 10px;
   background: #fafafa;
 }
+#searchResults {
+  margin: 0; /* Loại bỏ khoảng cách bên ngoài */
+  padding: 0; /* Loại bỏ khoảng cách bên trong */
+  position: relative; /* Đảm bảo vị trí tương đối */
+  top: 0; /* Đặt sát lên trên */
+  border: 1px solid #ccc;
+  background: #fafafa;
+  max-height: 400px;
+  overflow-y: auto;
+}
 
 .input-area {
   display: flex;
@@ -112,21 +122,24 @@ button:hover {
 }
 
 .message.user {
-  background-color: #d1e7dd;
+  background-color: #007bff;
   align-self: flex-end;
   text-align: right;
+  color : white;
 }
 
 .message.friend {
-  background-color: #f8d7da;
+  background-color: #F0F0F0;
   align-self: flex-start;
   text-align: left;
+  color : black;
 }
 
 .message.bot {
-  background-color: #e2e3e5;
+  background-color: #F0F0F0;
   align-self: flex-start;
   text-align: left;
+  color : black;
 }
 
 /* Căn chỉnh tin nhắn */
@@ -146,12 +159,100 @@ button:hover {
 .user-result .button-container {
   display: flex;
   align-items: center;
-  width: 70px;
+  justify-content: center; /* Căn giữa nội dung theo chiều ngang */
+  width: auto;
+  height: auto;
   float: right;
+}
+.button-group {
+  display: flex;
+  gap: 10px; /* Khoảng cách giữa các nút */
 }
 
 .user-result:hover {
   background-color: #f0f0f0;
 }
+
+/* Biểu tượng chuông */
+.notification-icon {
+  position: relative;
+
+  
+}
+#notificationBell {
+  background:none;
+  color:#00060b;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Căn giữa nội dung theo chiều ngang */
+  width: auto;
+  height: auto;
+  font-size: 20px; /* Tăng kích thước biểu tượng chuông */
+}
+.notification-bell {
+  position: relative;
+}
+
+.notification-bell .red-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  display: none; /* Ẩn chấm đỏ mặc định */
+}
+
+#notificationBell:hover {
+  color: #ead706;
+}
+
+/* Dropdown thông báo */
+#notificationDropdown {
+  position: absolute;
+  top: 50px;
+  left: 50%; /* Đặt vị trí giữa theo chiều ngang */
+  transform: translateX(-50%); /* Dịch chuyển để căn giữa */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+#notificationDropdown.hidden {
+  display: none;
+}
+
+#notificationDropdown h3 {
+  margin: 0;
+  padding: 10px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+#notificationDropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#notificationDropdown ul li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+#notificationDropdown ul li:last-child {
+  border-bottom: none;
+}
+
+#notificationDropdown ul li:hover {
+  background: #f9f9f9;
+}
+
 
 

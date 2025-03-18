@@ -47,4 +47,29 @@ router.get('/messages', async (req, res) => {
     }
 });
 
+router.get('/messages/recent', async (req, res) => {
+    const { userId } = req.query;
+    try {
+        const messages = await Message.find({
+            $or: [{ senderId: userId }, { receiverId: userId }]
+        })
+            .sort({ timestamp: -1 }) // Sắp xếp theo thời gian gần nhất
+            .lean();
+
+        // Lấy danh sách người dùng đã nhắn tin
+        const userIds = [...new Set(messages.flatMap(msg => [msg.senderId.toString(), msg.receiverId.toString()]))];
+        const otherUserIds = userIds.filter(id => id !== userId);
+
+        const users = await User.find({ _id: { $in: otherUserIds } }).lean();
+        const recentChats = users.map(user => ({
+            userId: user._id,
+            userName: user.name
+        }));
+
+        res.send(recentChats);
+    } catch (error) {
+        res.status(500).send({ error: 'Lỗi khi lấy danh sách đã nhắn tin' });
+    }
+});
+
 module.exports = router;

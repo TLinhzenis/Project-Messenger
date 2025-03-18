@@ -6,6 +6,8 @@
     <title>Chat Online</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
 </head>
 <body>
     <div class="container">
@@ -15,31 +17,39 @@
             <input type="text" id="search" placeholder="Tìm kiếm bạn bè...">
             <input type="hidden" id="receiverId" value="">
             
-            <button id="loginBtn">Đăng nhập</button>
-            <button id="logoutBtn">Đăng xuất</button>
-            <div id="notificationsContainer">
-                <h3>Thông báo</h3>
-                <ul id="notifications"></ul>
+            <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</button>
+            <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+            <div id="notificationsContainer" class="notification-icon">
+                <button id="notificationBell" class="notification-bell">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="red-dot"></span>
+                </button>
+                <div id="notificationDropdown" class="hidden">
+                    <h3>Thông báo</h3>
+                    <ul id="notifications"></ul>
+                </div>
             </div>
         </aside>
 
         <!-- Màn hình trung tâm -->
         <main class="chat-area">
-            <div id="chat-title">Chọn một người để trò chuyện</div>
-            <div id="chatbox"></div>
-            <div class="input-area">
+            <div id="searchResults" style="display: none;"></div>
+            <div id="chat-title"></div>
+            <div id="chatbox" style="display: none;"></div>
+            <div class="input-area" style="display: none;">
                 <input type="text" id="userInput" placeholder="Nhập tin nhắn...">
                 <button onclick="sendMessage()">Gửi</button>
             </div>
         </main>
 
         <!-- Sidebar phải -->
-        <aside class="sidebar right">
+        <div class="sidebar right">
             <h3>Danh sách bạn bè</h3>
-            <ul id="friendList">
-                <!-- Danh sách bạn bè sẽ được thêm vào đây -->
-            </ul>
-        </aside>
+            <ul id="friendList"></ul> <!-- Danh sách bạn bè -->
+        
+            <h3>Đã nhắn tin</h3>
+            <ul id="recentChats"></ul> <!-- Danh sách đã nhắn tin -->
+        </div>
     </div>
 
     <script src="script.js"></script>
@@ -68,6 +78,10 @@
             messageElement.textContent = data.text;
             chatbox.appendChild(messageElement);
         });
+        document.getElementById('notificationBell').addEventListener('click', () => {
+    const dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('hidden');
+});
     </script>
 </body>
 </html>
