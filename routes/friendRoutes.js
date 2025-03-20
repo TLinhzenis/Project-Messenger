@@ -22,6 +22,10 @@ router.post("/request", async (req, res) => {
         });
 
         await friendRequest.save();
+
+        // Gửi sự kiện realtime
+        req.io.emit("receiveFriendRequest", { userId2, message: friendRequest.notification });
+
         res.status(200).json({ message: "Đã gửi lời mời kết bạn." });
     } catch (error) {
         console.error("Lỗi khi gửi lời mời kết bạn:", error);
@@ -55,7 +59,12 @@ router.post("/respond", async (req, res) => {
             notification.status = "friend";
             notification.notification = null;
             await notification.save();
-        } else {
+        
+            // Phát sự kiện cập nhật danh sách bạn bè
+            req.io.emit("refreshFriendList", notification.userId1);
+            req.io.emit("refreshFriendList", notification.userId2);
+        }
+         else {
             await ListFriend.findByIdAndDelete(notificationId);
         }
 

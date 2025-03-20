@@ -306,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     `;
                 }).join("");
             }
+            this.value = ""; 
         } catch (error) {
             console.error("Lỗi tìm kiếm:", error);
             chatTitle.innerHTML = "Lỗi khi tải dữ liệu";

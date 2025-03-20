@@ -64,6 +64,18 @@
             const data = await response.json();
             message.textContent = data.message || data.error;
             message.style.color = response.ok ? "green" : "red";
+            if (response.ok) {
+                localStorage.setItem("user", JSON.stringify(data.user));
+                message.textContent = data.message;
+                message.style.color = "green";
+
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1000);
+            } else {
+                message.textContent = data.error;
+                message.style.color = "red";
+            }
         }
     </script>
 </body>

@@ -37,12 +37,12 @@ router.post("/login", async (req, res) => {
 
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).json({ error: "Tên đăng nhập không tồn tại!" });
+            return res.status(400).json({ error: "Tên đăng nhập hoặc mật khẩu không đúng" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ error: "Mật khẩu không đúng!" });
+            return res.status(400).json({ error: "Tên đăng nhập hoặc mật khẩu không đúng" });
         }
 
         res.json({ message: "Đăng nhập thành công!", user });

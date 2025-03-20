@@ -20,10 +20,10 @@ const port = 3000;
 const mongoURI = "mongodb+srv://btuanlinh715:Btuanlinh715@cluster0.krja2.mongodb.net/MessagerApp?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI)
-    .then(() => console.log("✅ Kết nối MongoDB thành công!"))
-    .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
+    .then(() => console.log(" Kết nối MongoDB thành công!"))
+    .catch(err => console.error(" Lỗi kết nối MongoDB:", err));
 const GOOGLE_API_KEY = "AIzaSyA_iOgOvxaY9BHnNPxSrMLoSEr7LADFTs4";  
-const MODEL_NAME = "models/gemini-1.5-pro-latest"; // Đổi sang model mới nhất
+const MODEL_NAME = "models/gemini-1.5-pro-latest";
 
 app.use(express.json());
 app.use(cors());
@@ -56,7 +56,12 @@ app.post("/chat", async (req, res) => {
 const userRoutes = require("./routes/UserRoute");
 app.use("/api", userRoutes);
 const friendRoutes = require("./routes/friendRoutes");
+app.use((req, res, next) => {
+    req.io = io; // Gán io vào request object để có thể sử dụng trong routes
+    next();
+});
 app.use("/api/friends", friendRoutes);
+
 
 const messageRoutes = require("./routes/messageRoutes");
 app.use("/api", messageRoutes);
@@ -69,12 +74,15 @@ socket.on("sendMessage", (data) => {
     io.emit("updateRecentChats", data.receiverId, data.senderId);
 });
 
+socket.on("updateFriends", (userId) => {
+    io.emit("refreshFriendList", userId);
+});
 
-    socket.on("disconnect", () => {
-        console.log("Người dùng đã ngắt kết nối:", socket.id);
-    });
+socket.on("disconnect", () => {
+    console.log("Người dùng đã ngắt kết nối:", socket.id);
+});
 });
 
 server.listen(port, () => {
-    console.log(`✅ Server đang chạy tại http://localhost:${port}`);
+    console.log(` Server đang chạy tại http://localhost:${port}`);
 });

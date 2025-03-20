@@ -7,7 +7,6 @@
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
 </head>
 <body>
     <div class="container">
@@ -16,7 +15,6 @@
             <div class="logo">ChatApp</div>
             <input type="text" id="search" placeholder="Tìm kiếm bạn bè...">
             <input type="hidden" id="receiverId" value="">
-            
             <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</button>
             <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
             <div id="notificationsContainer" class="notification-icon">
@@ -30,7 +28,6 @@
                 </div>
             </div>
         </aside>
-
         <!-- Màn hình trung tâm -->
         <main class="chat-area">
             <div id="searchResults" style="display: none;"></div>
@@ -41,47 +38,19 @@
                 <button onclick="sendMessage()">Gửi</button>
             </div>
         </main>
-
         <!-- Sidebar phải -->
         <div class="sidebar right">
             <h3>Danh sách bạn bè</h3>
             <ul id="friendList"></ul> <!-- Danh sách bạn bè -->
-        
             <h3>Đã nhắn tin</h3>
             <ul id="recentChats"></ul> <!-- Danh sách đã nhắn tin -->
         </div>
     </div>
+    <script src="js/List.js"></script>
+    <script src="js/Login.js"></script>
+    <script src="js/Chat.js"></script>
+    <script src="js/Notification.js"></script>
+    <script src="js/Search.js"></script>
 
-    <script src="script.js"></script>
-    <script>
-        const socket = io('http://localhost:3000');
-
-        const userInput = document.getElementById('userInput');
-
-        userInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        function sendMessage() {
-            const message = userInput.value;
-            if (message.trim() !== '') {
-                socket.emit('sendMessage', { text: message });
-                userInput.value = '';
-            }
-        }
-
-        socket.on('receiveMessage', (data) => {
-            const chatbox = document.getElementById('chatbox');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = data.text;
-            chatbox.appendChild(messageElement);
-        });
-        document.getElementById('notificationBell').addEventListener('click', () => {
-    const dropdown = document.getElementById('notificationDropdown');
-    dropdown.classList.toggle('hidden');
-});
-    </script>
 </body>
 </html>
